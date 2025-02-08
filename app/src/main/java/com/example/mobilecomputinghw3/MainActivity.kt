@@ -7,11 +7,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlinx.serialization.Serializable
+import java.io.File
 
 
 class MainActivity : ComponentActivity() {
@@ -19,6 +21,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+
+            val context = LocalContext.current
+            val usernameFile = File(context.filesDir, "username")
+
+
+            if (!usernameFile.exists()) {
+                usernameFile.writeBytes("Hullu".toByteArray())
+            }
+
             AppNavigation(modifier = Modifier.systemBarsPadding())
         }
     }

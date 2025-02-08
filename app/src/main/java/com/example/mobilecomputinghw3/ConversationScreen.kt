@@ -1,6 +1,11 @@
 package com.example.mobilecomputinghw3
 
 import android.content.res.Configuration
+import android.net.Uri
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
@@ -21,6 +26,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,22 +40,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import coil3.compose.rememberAsyncImagePainter
 import com.example.mobilecomputinghw3.ui.theme.MobileComputingHW3Theme
+import java.io.File
 
 
 @Composable
 fun ConversationScreen(
     onNavigateToProfile: () -> Unit
 ) {
+
     Column {
 
         Row(
             modifier = Modifier
                 .background(Color.LightGray)
                 .fillMaxWidth()
+                .padding(4.dp)
 
         ) {
 
@@ -59,7 +71,7 @@ fun ConversationScreen(
                 onClick = onNavigateToProfile,
                 modifier = Modifier
                     .size(48.dp)
-                    .padding(4.dp)
+
 
             ) {
                 Icon(
@@ -77,19 +89,40 @@ fun ConversationScreen(
 
 }
 
+@Preview
+@Composable
+fun PreviewConversationScreen() {
+    ConversationScreen { }
+}
+
 data class Message(val author: String, val body: String)
 
 @Composable
-fun MessageCard(msg: Message) {
+fun MessageCard(msg: Message, imageFile: File) {
+    var text by remember { mutableStateOf(msg.author) }
+
     Row(modifier = Modifier.padding(all = 8.dp)) {
-        Image(
-            painter = painterResource(R.drawable.profile_picture),
-            contentDescription = null,
+        AsyncImage(
+            model = imageFile.toURI().toString() + "?timestamp=${System.currentTimeMillis()}",
+            contentDescription = "profile picture",
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
                 .border(1.5.dp, MaterialTheme.colorScheme.secondary, CircleShape)
+
+
         )
+
+//        Image(
+//            painter = painterResource(R.drawable.profile_picture),
+//            contentDescription = null,
+//            modifier = Modifier
+//            .size(40.dp)
+//            .clip(CircleShape)
+//            .border(1.5.dp, MaterialTheme.colorScheme.secondary, CircleShape)
+//
+//        )
+
         Spacer(modifier = Modifier.width(8.dp))
 
         // We keep track if the message is expanded or not in this
@@ -103,7 +136,7 @@ fun MessageCard(msg: Message) {
         // We toggle the isExpanded variable when we click on this Column
         Column(modifier = Modifier.clickable { isExpanded = !isExpanded }) {
             Text(
-                text = msg.author,
+                text = text,
                 color = MaterialTheme.colorScheme.secondary,
                 style = MaterialTheme.typography.titleSmall
             )
@@ -142,10 +175,13 @@ fun MessageCard(msg: Message) {
 
 @Composable
 fun PreviewMessageCard() {
+    val context = LocalContext.current
+    val file = File(context.filesDir, "profile_picture")
+
     MobileComputingHW3Theme {
         Surface {
             MessageCard(
-                msg = Message("Lexi", "Hey, take a look at Jetpack Compose, it's great!")
+                msg = Message("Hullu", "Hey, take a look at Jetpack Compose, it's great!"), file
             )
         }
     }
@@ -153,9 +189,14 @@ fun PreviewMessageCard() {
 
 @Composable
 fun Conversation(messages: List<Message>) {
+    val context = LocalContext.current
+    val file = File(context.filesDir, "profile_picture")
+    val usernameFile = File(context.filesDir, "username")
+    val author = usernameFile.readBytes().decodeToString()
+
     LazyColumn {
         items(messages) { message ->
-            MessageCard(message)
+            MessageCard(Message(author, message.body), file)
         }
     }
 }
@@ -172,14 +213,16 @@ fun PreviewConversation() {
  * SampleData for Jetpack Compose Tutorial
  */
 object SampleData {
+    private const val AUTHOR: String = "Hullu"
+
     // Sample conversation data
     val conversationSample = listOf(
         Message(
-            "Lexi",
+            AUTHOR,
             "Test...Test...Test..."
         ),
         Message(
-            "Lexi",
+            AUTHOR,
             """List of Android versions:
             |Android KitKat (API 19)
             |Android Lollipop (API 21)
@@ -192,51 +235,51 @@ object SampleData {
             |Android 12 (API 31)""".trim()
         ),
         Message(
-            "Lexi",
+            AUTHOR,
             """I think Kotlin is my favorite programming language.
             |It's so much fun!""".trim()
         ),
         Message(
-            "Lexi",
+            AUTHOR,
             "Searching for alternatives to XML layouts..."
         ),
         Message(
-            "Lexi",
+            AUTHOR,
             """Hey, take a look at Jetpack Compose, it's great!
             |It's the Android's modern toolkit for building native UI.
             |It simplifies and accelerates UI development on Android.
             |Less code, powerful tools, and intuitive Kotlin APIs :)""".trim()
         ),
         Message(
-            "Lexi",
+            AUTHOR,
             "It's available from API 21+ :)"
         ),
         Message(
-            "Lexi",
+            AUTHOR,
             "Writing Kotlin for UI seems so natural, Compose where have you been all my life?"
         ),
         Message(
-            "Lexi",
+            AUTHOR,
             "Android Studio next version's name is Arctic Fox"
         ),
         Message(
-            "Lexi",
+            AUTHOR,
             "Android Studio Arctic Fox tooling for Compose is top notch ^_^"
         ),
         Message(
-            "Lexi",
+            AUTHOR,
             "I didn't know you can now run the emulator directly from Android Studio"
         ),
         Message(
-            "Lexi",
+            AUTHOR,
             "Compose Previews are great to check quickly how a composable layout looks like"
         ),
         Message(
-            "Lexi",
+            AUTHOR,
             "Previews are also interactive after enabling the experimental setting"
         ),
         Message(
-            "Lexi",
+            AUTHOR,
             "Have you tried writing build.gradle with KTS?"
         ),
     )
