@@ -21,10 +21,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-
             val context = LocalContext.current
             val usernameFile = File(context.filesDir, "username")
-
 
             if (!usernameFile.exists()) {
                 usernameFile.writeBytes("Hullu".toByteArray())
@@ -47,8 +45,6 @@ fun AppNavigation(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController()
 ) {
-
-
     NavHost(
         modifier = modifier,
         navController = navController,

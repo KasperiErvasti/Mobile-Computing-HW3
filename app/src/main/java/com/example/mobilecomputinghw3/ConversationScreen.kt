@@ -1,14 +1,8 @@
 package com.example.mobilecomputinghw3
 
 import android.content.res.Configuration
-import android.net.Uri
-import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,7 +20,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -40,12 +33,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import coil3.compose.rememberAsyncImagePainter
 import com.example.mobilecomputinghw3.ui.theme.MobileComputingHW3Theme
 import java.io.File
 
@@ -54,9 +46,7 @@ import java.io.File
 fun ConversationScreen(
     onNavigateToProfile: () -> Unit
 ) {
-
     Column {
-
         Row(
             modifier = Modifier
                 .background(Color.LightGray)
@@ -71,8 +61,6 @@ fun ConversationScreen(
                 onClick = onNavigateToProfile,
                 modifier = Modifier
                     .size(48.dp)
-
-
             ) {
                 Icon(
                     imageVector = Icons.Default.AccountCircle,
@@ -80,20 +68,14 @@ fun ConversationScreen(
                     modifier = Modifier.fillMaxSize()
                 )
             }
-
         }
-
 
         Conversation(SampleData.conversationSample)
     }
 
 }
 
-@Preview
-@Composable
-fun PreviewConversationScreen() {
-    ConversationScreen { }
-}
+
 
 data class Message(val author: String, val body: String)
 
@@ -108,20 +90,9 @@ fun MessageCard(msg: Message, imageFile: File) {
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .border(1.5.dp, MaterialTheme.colorScheme.secondary, CircleShape)
-
-
+                .border(1.5.dp, MaterialTheme.colorScheme.secondary, CircleShape),
+            contentScale = ContentScale.Crop
         )
-
-//        Image(
-//            painter = painterResource(R.drawable.profile_picture),
-//            contentDescription = null,
-//            modifier = Modifier
-//            .size(40.dp)
-//            .clip(CircleShape)
-//            .border(1.5.dp, MaterialTheme.colorScheme.secondary, CircleShape)
-//
-//        )
 
         Spacer(modifier = Modifier.width(8.dp))
 
@@ -166,26 +137,6 @@ fun MessageCard(msg: Message, imageFile: File) {
     }
 }
 
-@Preview(name = "Light Mode")
-@Preview(
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    showBackground = true,
-    name = "Dark Mode"
-)
-
-@Composable
-fun PreviewMessageCard() {
-    val context = LocalContext.current
-    val file = File(context.filesDir, "profile_picture")
-
-    MobileComputingHW3Theme {
-        Surface {
-            MessageCard(
-                msg = Message("Hullu", "Hey, take a look at Jetpack Compose, it's great!"), file
-            )
-        }
-    }
-}
 
 @Composable
 fun Conversation(messages: List<Message>) {
@@ -201,13 +152,6 @@ fun Conversation(messages: List<Message>) {
     }
 }
 
-@Preview
-@Composable
-fun PreviewConversation() {
-    MobileComputingHW3Theme {
-        Conversation(SampleData.conversationSample)
-    }
-}
 
 /**
  * SampleData for Jetpack Compose Tutorial
@@ -283,4 +227,40 @@ object SampleData {
             "Have you tried writing build.gradle with KTS?"
         ),
     )
+}
+
+@Preview
+@Composable
+fun PreviewMessageCard() {
+    val context = LocalContext.current
+    val file = File(context.filesDir, "profile_picture")
+
+    MobileComputingHW3Theme {
+        Surface {
+            MessageCard(
+                msg = Message("Hullu", "Hey, take a look at Jetpack Compose, it's great!"), file
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun PreviewConversationScreen() {
+    ConversationScreen { }
+}
+
+@Preview(name = "Light Mode")
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    showBackground = true,
+    name = "Dark Mode"
+)
+
+@Preview
+@Composable
+fun PreviewConversation() {
+    MobileComputingHW3Theme {
+        Conversation(SampleData.conversationSample)
+    }
 }

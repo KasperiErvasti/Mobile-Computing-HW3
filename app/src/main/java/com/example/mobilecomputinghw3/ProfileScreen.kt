@@ -1,13 +1,8 @@
 package com.example.mobilecomputinghw3
 
-import android.content.ContentResolver
-import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.registerForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,7 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -36,13 +30,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import coil3.compose.rememberAsyncImagePainter
 import java.io.File
 
 @Composable
@@ -51,9 +45,15 @@ fun ProfileScreen(
 ) {
     val context = LocalContext.current
     val resolver = context.contentResolver
+
     val file = File(context.filesDir, "profile_picture")
     val usernameFile = File(context.filesDir, "username")
-    val iconSpacerSize = 48.dp
+
+    var filePath by remember {
+        mutableStateOf(
+            file.toURI().toString()
+        )
+    }
 
     Column {
         Row(
@@ -63,8 +63,7 @@ fun ProfileScreen(
                 .padding(4.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Used to center Profile Text to center
-
+            val iconSpacerSize = 48.dp // Used to center Profile Text to center
 
             IconButton(
                 onClick = onNavigateToConversation,
@@ -90,87 +89,42 @@ fun ProfileScreen(
         }
 
 
-
-
-
-            var pickedImage by remember {
-                mutableStateOf<Uri?>(null)
-            }
-
-            val pickMedia =
-                rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-                    pickedImage = uri
-
-                    if (uri != null) {
-                        resolver.openInputStream(uri).use { stream ->
-                            val outputStream = file.outputStream()
-                            stream?.copyTo(outputStream)
-
-                            outputStream.close()
-                            stream?.close()
-                        }
-                    }
-
-                }
-
-
-        Column(modifier = Modifier.padding(8.dp)) {
-
-
-//            // VARAS ALKU
-            var imageUri by remember { mutableStateOf<Uri?>(Uri.parse(file.toURI().toString())) }
-            val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri->
-                imageUri = uri
-
+        val pickMedia =
+            rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
                 if (uri != null) {
                     resolver.openInputStream(uri).use { stream ->
                         val outputStream = file.outputStream()
-                        Log.d("NewTag", "Selected URI: $uri")
                         stream?.copyTo(outputStream)
 
                         outputStream.close()
                         stream?.close()
                     }
+
+                    filePath = file.toURI().toString() + "?timestamp=${System.currentTimeMillis()}"
                 }
+
             }
-//
-//            Column {
-//                Button(onClick = { launcher.launch("image/*") }) {
-//                    Text(text = "Load Image")
-//                }
-//                Image(
-//                    painter = rememberAsyncImagePainter(imageUri),
-//                    contentDescription = "My Image",
-//                    modifier = Modifier
-//                        .clip(CircleShape)
-//                        .border(2.dp, MaterialTheme.colorScheme.secondary, CircleShape)
-//                        .size(80.dp)
-//                )
-//            }
-//            // VARAS LOPPU
 
 
-
-
+        Column(modifier = Modifier.padding(8.dp)) {
 
             AsyncImage(
-
-                model = file.toURI().toString() + "?timestamp=${System.currentTimeMillis()}",
+                model = filePath,
                 contentDescription = "profile picture",
                 modifier = Modifier
                     .clip(CircleShape)
                     .border(2.dp, MaterialTheme.colorScheme.secondary, CircleShape)
                     .size(100.dp)
-                    .clickable { pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                    }
-//                    .clickable {launcher.launch("image/*") }
-
+                    .clickable {
+                        pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    },
+                contentScale = ContentScale.Crop
             )
 
             Spacer(modifier = Modifier.size(8.dp))
 
             var text by remember {
-                mutableStateOf<String>(
+                mutableStateOf(
                     usernameFile.readBytes().decodeToString()
                 )
             }
@@ -184,52 +138,9 @@ fun ProfileScreen(
                 label = { Text("Username") },
                 singleLine = true
             )
-
-
-        }
-
-
-    }
-}
-
-@Composable
-fun StoreImage(pickedImage: Uri?, filename: String = "profile_picture") {
-    if (pickedImage != null) {
-        val context = LocalContext.current
-
-        // Open a specific media item using InputStream.
-        val resolver = context.contentResolver
-        resolver.openInputStream(pickedImage).use { stream ->
-
-            val file = File(context.filesDir, filename)
-            val outputStream = file.outputStream()
-
-            stream?.copyTo(outputStream)
         }
     }
-
-
 }
-
-
-    @Composable
-    fun PickMedia() {
-        // Registers a photo picker activity launcher in single-select mode.
-        val pickMedia =
-            rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-                // Callback is invoked after the user selects a media item or closes the
-                // photo picker.
-                if (uri != null) {
-                    Log.d("PhotoPicker", "Selected URI: $uri")
-                } else {
-                    Log.d("PhotoPicker", "No media selected")
-                }
-            }
-
-        // Launch the photo picker and let the user choose only images.
-        pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-    }
-
 
 
 @Preview(showBackground = true)
